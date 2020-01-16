@@ -53,6 +53,10 @@ def contestList():
     r = requests.get(url)
     data = r.json()
 
+    if(data['status'] != 'OK'):
+        print('Some error occured while fetching Contest list.. Try again..!')
+        return
+
     contests = []
     #print(data)
     for x in data['result']:
