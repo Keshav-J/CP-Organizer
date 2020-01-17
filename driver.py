@@ -16,7 +16,7 @@ def userInfo(user):
     #print()
 
     if(data['status'] != 'OK'):
-        print('User handle not found!')
+        print(data['comment'])
         return
 
     user = data['result'][0]
@@ -173,7 +173,12 @@ def userStatus(user):
         'solved'  : solved,
         'unsolved': unsolved
     }
-    
+
+def getUser():
+    user = input('Enter user handle: ')
+    while(len(user) == 0):
+        user = input('Enter user handle: ')
+    return user
 
 def getUserDetails():
     user = input('Enter user handle: ')
@@ -190,14 +195,28 @@ def getProblems(user):
     problems = userStatus(user)
     return problems
 
+def printProblemsStat(problems):
+    print()
+    print('Attempted:', len(problems['solved'])+len(problems['unsolved']))
+    print('Solved   :', len(problems['solved']))
+    print('Unsolved :', len(problems['unsolved']))
+
+def openURL(url):
+    chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+    webbrowser.get(chrome_path).open(url)
+
 def loadUnsolved():
     user = input('Enter user handle: ')
     problems = getProblems(user)
 
+    m = dict()
     print()
     print('Unsolved problems:')
     for x in problems['unsolved']:
         print(x[0], x[1])
+        if(x[1] not in m.keys()):
+            m[x[1]] = []
+        m[x[1]].append(x[0])
 
     '''
     print()
@@ -206,21 +225,36 @@ def loadUnsolved():
         print('https://codeforces.com/contest/' + str(x[0]) + '/problem/' + x[1])
     '''
 
+    printProblemsStat(problems)
+    
     print()
-    print('Attempted:', len(problems['solved'])+len(problems['unsolved']))
-    print('Solved   :', len(problems['solved']))
-    print('Unsolved :', len(problems['unsolved']))
+    for x in sorted(m.keys()):
+        print(x, '\t', len(m[x]))    
 
-    unsolved = problems['unsolved']
-    n = len(unsolved)
+    ch = ''
+    while(len(ch) == 0):
+        ch = input('Any particular choice (A/B/.../-):')
 
-    prob = unsolved[random.randint(0, n-1)]
+    if(ch in m.keys()):
+        n = len(m[ch])
+        
+        prob = (m[ch][random.randint(0, n-1)], ch)
+
+    else:
+        if(ch != '-'):
+            print('Oops! No unsolved problem in that index')
+        print('Choosing random problem...')
+
+        unsolved = problems['unsolved']
+        n = len(unsolved)
+
+        prob = unsolved[random.randint(0, n-1)]
+
     print('Loading problem', prob[0], '/', prob[1])
 
     url = 'https://codeforces.com/contest/' + str(prob[0]) + '/problem/' + prob[1]
     
-    chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
-    webbrowser.get(chrome_path).open(url)
+    openURL(url)
    
 
 # Driver Code
@@ -234,31 +268,40 @@ while(ch != 5):
     ch = int(input())
     
     if(ch == 1):
-        user = input('Enter user handle: ')
+        user = getUser()
         userInfo(user)
 
     elif(ch == 2):
-        user = input('Enter user handle: ')
+        user = getUser()
         problems = getProblems(user)
 
+        m = dict()
         print()
         print('Solved problems:')
         for x in problems['solved']:
             print(x[0], x[1])
+            if(x[1] not in m.keys()):
+                m[x[1]] = 0
+            m[x[1]] += 1
+                
+        printProblemsStat(problems)
 
         print()
-        print('Attempted:', len(problems['solved'])+len(problems['unsolved']))
-        print('Solved   :', len(problems['solved']))
-        print('Unsolved :', len(problems['unsolved']))
+        for x in sorted(m.keys()):
+            print(x, '\t', m[x])
 
     elif(ch == 3):
-        user = input('Enter user handle: ')
+        user = getUser()
         problems = getProblems(user)
+        m = dict()
 
         print()
         print('Unsolved problems:')
         for x in problems['unsolved']:
             print(x[0], x[1])
+            if(x[1] not in m.keys()):
+                m[x[1]] = 0
+            m[x[1]] += 1
 
         '''    
         print()
@@ -267,10 +310,12 @@ while(ch != 5):
             print('https://codeforces.com/contest/' + str(x[0]) + '/problem/' + x[1])
         '''
         
+        printProblemsStat(problems)
+
         print()
-        print('Attempted:', len(problems['solved'])+len(problems['unsolved']))
-        print('Solved   :', len(problems['solved']))
-        print('Unsolved :', len(problems['unsolved']))
+        for x in sorted(m.keys()):
+            print(x, '\t', m[x])
+
     elif(ch == 4):
         loadUnsolved()
 
