@@ -191,11 +191,11 @@ def getSolvedNaive():
     for x in contests:
         contestDetails(x, 'Keshav_J')
 
-def getProblems(user):
+def getMyProblems(user):
     problems = userStatus(user)
     return problems
 
-def printProblemsStat(problems):
+def printMyProblemsStat(problems):
     print()
     print('Attempted:', len(problems['solved'])+len(problems['unsolved']))
     print('Solved   :', len(problems['solved']))
@@ -207,7 +207,7 @@ def openURL(url):
 
 def loadUnsolved():
     user = input('Enter user handle: ')
-    problems = getProblems(user)
+    problems = getMyProblems(user)
 
     m = dict()
     print()
@@ -225,7 +225,7 @@ def loadUnsolved():
         print('https://codeforces.com/contest/' + str(x[0]) + '/problem/' + x[1])
     '''
 
-    printProblemsStat(problems)
+    printMyProblemsStat(problems)
     
     print()
     for x in sorted(m.keys()):
@@ -255,17 +255,103 @@ def loadUnsolved():
     url = 'https://codeforces.com/contest/' + str(prob[0]) + '/problem/' + prob[1]
     
     openURL(url)
-   
+
+
+def loadNewProblem():
+    print('Choose tag(s):')
+    print('--------------')
+
+    tags = ['2-sat', 'binary search', 'bitmasks', 'brute force', 'chinese remainder theorem',
+            'combinotorics', 'constructive algorithms', 'data structures', 'dfa and similar',
+            'divide and conquer', 'dp', 'dsu', 'expression parsing', 'fft', 'flows', 'games',
+            'grometry', 'graph matchings', 'graphs', 'greedy', 'hashing', 'implementation',
+            'interactive', 'math', 'matrices', 'meet-in-the-middle', 'number theory',
+            'probabilities', 'schedules', 'shortest paths', 'sortings',
+            'string suffix structures', 'strings', 'ternary search', 'trees', 'two pointers']
+
+    i = 1
+    for p in tags:
+        print(i, p)
+        i += 1
+
+    print()
+    ch = list(map(int, input('Enter your choices: ').split()))
+
+    url = 'https://codeforces.com/api/problemset.problems'
+
+    params = {
+        'tags' : ''
+    }
+
+    for i in ch:
+        params['tags'] += tags[i-1] + ';'
+
+    print()
+    print('Choosen tags:')
+    print('-------------')
+    for i in ch:
+        print(tags[i-1])
+
+    r = requests.get(url, params)
+    data = r.json()
+
+    #print(data)
+
+    if(data['status'] != 'OK'):
+        print(data['comment'])
+        return
+
+    problems = []
+
+    for p in data['result']['problems']:
+        problems.append((p['rating'], p['contestId'], p['index'], p['name']))
+
+    problems.sort()
+
+    if(len(problems) == 0):
+        print('No problem with that combination of tags')
+        return
+
+    i = 1
+    for p in problems:
+        print(i, *p, sep='\t')
+        i += 1
+
+    ch = int(input('Choose a problem (0 for random): '))
+
+    n = len(problems)
+    if(ch in range(1, n+1)):
+        prob = problems[ch-1]
+    else:
+        prob = problems[random.randint(0, n-1)]
+
+    print()
+    print('Loading problem...')
+    print('Name   : ', prob[3])
+    print('Contest: ', prob[1], '/', prob[2])
+    print('Rating : ', prob[0])
+    
+
+    url = 'https://codeforces.com/contest/' + str(prob[1]) + '/problem/' + prob[2]
+    
+    openURL(url)
+    
 
 # Driver Code
 ch = 0
-while(ch != 5):
+while(ch != 6):
     print('1. User Profile')
     print('2. Show Solved Problems')
-    print('3. Show unolved Problems')
+    print('3. Show unolved Problems')  
     print('4. Load an unsolved Problems')
-    print('5. Exit')
-    ch = int(input())
+    print('5. Load a new Problem')
+    print('6. Exit')
+
+    ch = -1
+    while(ch not in range(1, 7)):
+        ch = input()
+        if(ch in ['1', '2', '3', '4', '5', '6']):
+            ch = int(ch)
     
     if(ch == 1):
         user = getUser()
@@ -273,7 +359,7 @@ while(ch != 5):
 
     elif(ch == 2):
         user = getUser()
-        problems = getProblems(user)
+        problems = getMyProblems(user)
 
         m = dict()
         print()
@@ -284,7 +370,7 @@ while(ch != 5):
                 m[x[1]] = 0
             m[x[1]] += 1
                 
-        printProblemsStat(problems)
+        printMyProblemsStat(problems)
 
         print()
         for x in sorted(m.keys()):
@@ -292,7 +378,7 @@ while(ch != 5):
 
     elif(ch == 3):
         user = getUser()
-        problems = getProblems(user)
+        problems = getMyProblems(user)
         m = dict()
 
         print()
@@ -310,7 +396,7 @@ while(ch != 5):
             print('https://codeforces.com/contest/' + str(x[0]) + '/problem/' + x[1])
         '''
         
-        printProblemsStat(problems)
+        printMyProblemsStat(problems)
 
         print()
         for x in sorted(m.keys()):
@@ -318,5 +404,8 @@ while(ch != 5):
 
     elif(ch == 4):
         loadUnsolved()
+
+    elif(ch == 5):
+        loadNewProblem()
 
     print()
