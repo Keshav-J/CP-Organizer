@@ -7,6 +7,7 @@ from fetch_module import getUserInfo
 from fetch_module import displayUserInfo
 from fetch_module import getUserProblems
 from fetch_module import getUserProblemsDetailed
+from fetch_module import getUserContestPerformance
 from fetch_module import checkUserActivity
 from fetch_module import printUserProblemsStat
 
@@ -239,13 +240,13 @@ userChoice = -1
 while(userHandle == '' or (getUserInfo(userHandle) == False)):
     userHandle = input('Enter your codeforces user handle: ')
 
-file = open("test.txt", "w")
+file = open("userHandle.txt", "w")
 file.write(userHandle)
 file.close()
     
 checkUserActivity(userHandle)
 
-n = 8
+n = 9
 while(userChoice != n):
     print()
     print('1. User profile')
@@ -254,8 +255,9 @@ while(userChoice != n):
     print('4. Load an unsolved Problems')
     print('5. Load a new Problem')
     print('6. Show my stats')
-    print('7. Change User Handle')
-    print('8. Exit')
+    print('7. Show my contest-wise record')
+    print('8. Change User Handle')
+    print('9. Exit')
 
     userChoice = -1
     while(userChoice < 1 or n < userChoice):
@@ -305,6 +307,9 @@ while(userChoice != n):
         showStats(userHandle)
 
     elif(userChoice == 7):
+        getUserContestPerformance(userHandle)
+
+    elif(userChoice == 8):
         userHandle = ''
         while(userHandle == '' or (getUserInfo(userHandle) == False)):
             userHandle = input('Enter your codeforces user handle: ')

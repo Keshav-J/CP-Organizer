@@ -152,6 +152,80 @@ def getUserProblemsDetailed(userId):
         'tags'    : tags
     }
 
+def getUserContestPerformance(userId):
+    url = 'https://codeforces.com/api/user.rating'
+
+    params = {
+        'handle' : userId
+    }
+
+    response = requests.get(url, params)
+    data = response.json()
+
+    rating_changes = data['result']
+
+    contests = ['Div. 3', 'Div. 2', 'Div. 1', 'Educational', 'Global']
+    ratings = {
+            'Div. 1' : 0,
+            'Div. 2' : 0,
+            'Div. 3' : 0,
+            'Educational' : 0,
+            'Global' : 0,
+            'Other' : 0
+        }
+    newRatings = {
+            'Div. 1' : 0,
+            'Div. 2' : 0,
+            'Div. 3' : 0,
+            'Educational' : 0,
+            'Global' : 0,
+            'Other' : 0
+        }
+    count = {
+            'Div. 1' : 0,
+            'Div. 2' : 0,
+            'Div. 3' : 0,
+            'Educational' : 0,
+            'Global' : 0,
+            'Other' : 0
+        }
+
+    rating_changes[0]['oldRating'] = 1500    # Base Rating
+    
+    for rating in rating_changes:
+        if('Global' in rating['contestName']):
+            ratings['Global'] += (rating['newRating'] - rating['oldRating'])
+            newRatings['Global'] += rating['newRating']
+            count['Global'] += 1
+        elif('Educational' in rating['contestName']):
+            ratings['Educational'] += (rating['newRating'] - rating['oldRating'])
+            newRatings['Educational'] += rating['newRating']
+            count['Educational'] += 1
+        elif('Div. 3' in rating['contestName']):
+            ratings['Div. 3'] += (rating['newRating'] - rating['oldRating'])
+            newRatings['Div. 3'] += rating['newRating']
+            count['Div. 3'] += 1
+        elif('Div. 2' in rating['contestName']):
+            ratings['Div. 2'] += (rating['newRating'] - rating['oldRating'])
+            newRatings['Div. 2'] += rating['newRating']
+            count['Div. 2'] += 1
+        elif('Div. 1' in rating['contestName']):
+            ratings['Div. 1'] += (rating['newRating'] - rating['oldRating'])
+            newRatings['Div. 1'] += rating['newRating']
+            count['Div. 1'] += 1
+        else:
+            ratings['Other'] += (rating['newRating'] - rating['oldRating'])
+            newRatings['Other'] += rating['newRating']
+            count['Other'] += 1
+    
+    print()
+    print('Codeforces Round (Div. 1)   : ', ratings['Div. 1'], ' (', count['Div. 1'], ')\t Avg. New Rating ', (newRatings['Div. 1']//max(count['Div. 1'],1)), sep='')
+    print('Codeforces Round (Div. 2)   : ', ratings['Div. 2'], ' (', count['Div. 2'], ')\t Avg. New Rating ', (newRatings['Div. 2']//max(count['Div. 2'],1)), sep='')
+    print('Codeforces Round (Div. 3)   : ', ratings['Div. 3'], ' (', count['Div. 3'], ')\t Avg. New Rating ', (newRatings['Div. 3']//max(count['Div. 3'],1)), sep='')
+    print('Educational Codeforces Round: ', ratings['Educational'], ' (', count['Educational'], ')\t Avg. New Rating ', (newRatings['Educational']//max(count['Educational'],1)), sep='')
+    print('Codeforces Global Round     : ', ratings['Global'], ' (', count['Global'], ')\t Avg. New Rating ', (newRatings['Global']//max(count['Global'],1)), sep='')
+    print('Other contests              : ', ratings['Other'], ' (', count['Other'], ')\t Avg. New Rating ', (newRatings['Other']//max(count['Other'],1)), sep='')
+
 def checkUserActivity(userId):
     url = 'https://codeforces.com/api/user.status'
 
