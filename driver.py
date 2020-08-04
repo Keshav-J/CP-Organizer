@@ -80,6 +80,14 @@ def loadNewProblem():
     print()
     ch = list(map(int, input('Enter your choices (space-separated): ').split()))
 
+    low = input('Enter minimum rating: ')
+    if(low.isdigit()): low = int(low)
+    else             : low = 0
+
+    high = input('Enter maximum rating: ')
+    if(high.isdigit()): high = int(high)
+    else              : high = 3500
+
     url = 'https://codeforces.com/api/problemset.problems'
 
     params = {
@@ -106,10 +114,11 @@ def loadNewProblem():
     problems = []
 
     for prob in data['result']['problems']:
-        if('rating' in prob.keys()):
+        if('rating' not in prob.keys()):
+            prob['rating'] = 0
+
+        if(low <= prob['rating'] and prob['rating'] <= high):
             problems.append((prob['rating'], prob['contestId'], prob['index'], prob['name']))
-        else:
-            problems.append((0, prob['contestId'], prob['index'], prob['name']))
     
     problems.sort()
 
@@ -118,6 +127,7 @@ def loadNewProblem():
         return
 
     i = 1
+    print(*('#', 'Rating', 'Contest', 'Index', 'Problem Name'), sep='\t')
     for prob in problems:
         print(i, *prob, sep='\t')
         i += 1
@@ -236,7 +246,6 @@ file.close()
 checkUserActivity(userHandle)
 
 n = 8
-inp = [str(i) for i in range(1, n+1)]
 while(userChoice != n):
     print()
     print('1. User profile')
@@ -251,7 +260,7 @@ while(userChoice != n):
     userChoice = -1
     while(userChoice < 1 or n < userChoice):
         userChoice = input('Enter Your choice: ')
-        if(userChoice in inp):
+        if(userChoice.isdigit()):
             userChoice = int(userChoice)
         else:
             userChoice = -1
