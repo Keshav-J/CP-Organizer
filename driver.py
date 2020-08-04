@@ -1,10 +1,12 @@
 import requests
 import webbrowser
 import random
+import pandas as pd
 
 from fetch_module import getUserInfo
 from fetch_module import displayUserInfo
 from fetch_module import getUserProblems
+from fetch_module import getUserProblemsDetailed
 from fetch_module import printUserProblemsStat
 
 
@@ -136,7 +138,85 @@ def loadNewProblem():
     url = 'https://codeforces.com/contest/' + str(prob[1]) + '/problem/' + prob[2]
     
     openURL(url)
+
+def showStats(userId):
+    problems = getUserProblemsDetailed(userId)
+
+    solvedProblems = problems['solved']
+    unsolvedProblems = problems['unsolved']
+    problemTags = problems['tags']
     
+    #for p in problemTags:
+    #    print(p, problemTags[p])
+
+    tags = ['2-sat', 'binary search', 'bitmasks', 'brute force', 'chinese remainder theorem',
+            'combinatorics', 'constructive algorithms', 'data structures', 'dfs and similar',
+            'divide and conquer', 'dp', 'dsu', 'expression parsing', 'fft', 'flows', 'games',
+            'geometry', 'graph matchings', 'graphs', 'greedy', 'hashing', 'implementation',
+            'interactive', 'math', 'matrices', 'meet-in-the-middle', 'number theory',
+            'probabilities', 'schedules', 'shortest paths', 'sortings', '*special',
+            'string suffix structures', 'strings', 'ternary search', 'trees', 'two pointers']
+
+    solvedTags = dict()
+    unsolvedTags = dict()
+    
+    for tag in tags:
+        solvedTags[tag] = 0
+        unsolvedTags[tag] = 0
+
+    for problem in solvedProblems:
+        for tag in problemTags[problem]:
+            solvedTags[tag] += 1
+
+    for problem in unsolvedProblems:
+        for tag in problemTags[problem]:
+            unsolvedTags[tag] += 1
+
+    #print(solvedTags)
+    #print(unsolvedTags)
+
+    table = [[tag, solvedTags[tag], unsolvedTags[tag]] for tag in tags]
+    table.sort(key = lambda x: x[1]*1000+x[2], reverse = True)
+
+    print(pd.DataFrame(table))
+    print()
+
+    category = {
+            'exp' : [['Title', 'Solved', 'Unsolved']],
+            'med' : [['Title', 'Solved', 'Unsolved']],
+            'beg' : [['Title', 'Solved', 'Unsolved']],
+            'zer' : [['Title', 'Solved', 'Unsolved']]
+        }
+    
+    for tag in table:
+        if(tag[1]+tag[2] >= 100):
+            category['exp'].append(tag)
+        elif(tag[1]+tag[2] >= 25):
+            category['med'].append(tag)
+        elif(tag[1]+tag[2] >= 1):
+            category['beg'].append(tag)
+        else:
+            category['zer'].append(tag)
+
+    if(len(category['exp']) > 0):
+        print('Tags you have some solid experience in:')
+        print(pd.DataFrame(category['exp']))
+        print()
+
+    if(len(category['med']) > 0):
+        print('Tags you have reasonable experience and need to work on:')
+        print(pd.DataFrame(category['med']))
+        print()
+
+    if(len(category['beg']) > 0):
+        print('Tags you have very little experience and need to foucs:')
+        print(pd.DataFrame(category['beg']))
+        print()
+
+    if(len(category['zer']) > 0):
+        print('Tags you have not yet touched:')
+        print(pd.DataFrame(category['zer']))
+        print()
 
 # Driver Code
 userChoice = -1
@@ -146,21 +226,26 @@ while(userHandle == ''):
     if(getUserInfo(userHandle) == False):
         userHandle = ''
 
-while(userChoice != 7):
+n = 8
+inp = [str(i) for i in range(1, n+1)]
+while(userChoice != n):
     print()
     print('1. User Profile')
     print('2. Show Solved Problems')
     print('3. Show unolved Problems')  
     print('4. Load an unsolved Problems')
     print('5. Load a new Problem')
-    print('6. Change User ')
-    print('7. Exit')
+    print('6. Show My Stats')
+    print('7. Change User Handle')
+    print('8. Exit')
 
     userChoice = -1
-    while(userChoice not in range(1, 8)):
+    while(userChoice < 1 or n < userChoice):
         userChoice = input('Enter Your choice: ')
-        if(userChoice in ['1', '2', '3', '4', '5', '6', '7']):
+        if(userChoice in inp):
             userChoice = int(userChoice)
+        else:
+            userChoice = -1
     
     if(userChoice == 1):
         displayUserInfo(userHandle)
@@ -199,6 +284,9 @@ while(userChoice != 7):
         loadNewProblem()
 
     elif(userChoice == 6):
+        showStats(userHandle)
+
+    elif(userChoice == 7):
         userHandle = ''
         while(userHandle == ''):
             userHandle = input('Enter your codeforces user handle: ')

@@ -95,6 +95,60 @@ def getUserProblems(userId):
         'unsolved': unsolved
     }
 
+def getUserProblemsDetailed(userId):
+    url = 'https://codeforces.com/api/user.status'
+
+    params = {
+        'handle' : userId,
+        'count'  : 100000,
+        'gym'    : False
+    }
+
+    response = requests.get(url, params)
+    data = response.json()
+
+    if(data['status'] != 'OK'):
+        print('User handle not found!')
+        return
+    
+    submissions = data['result']
+
+    problems = set()
+    solved = set()
+    tags = dict()
+
+    for sub in submissions:
+        problem = sub['problem']
+
+        if(problem['contestId'] >= 100000): continue  #Gym Ids
+
+        problem_pair = (problem['contestId'], problem['index'])
+
+        tags[problem_pair] = problem['tags']
+        
+        problems.add(problem_pair)
+        if(sub['verdict'] == 'OK'):
+            solved.add(problem_pair)
+
+    solved = sorted(list(solved))
+
+    isSolved = dict()
+    for problem in problems:
+        isSolved[problem] = 0
+    for problem in solved:
+        isSolved[problem] = 1
+
+    unsolved = []
+    for problem in problems:
+        if(isSolved[problem] == 0):
+            unsolved.append(problem)
+
+    return {
+        'solved'  : solved,
+        'unsolved': unsolved,
+        'tags'    : tags
+    }
+
 def printUserProblemsStat(problems):
     print()
     print('Attempted:', len(problems['solved'])+len(problems['unsolved']))
