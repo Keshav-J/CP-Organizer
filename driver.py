@@ -7,6 +7,7 @@ from fetch_module import getUserInfo
 from fetch_module import displayUserInfo
 from fetch_module import getUserProblems
 from fetch_module import getUserProblemsDetailed
+from fetch_module import checkUserActivity
 from fetch_module import printUserProblemsStat
 
 
@@ -209,7 +210,7 @@ def showStats(userId):
         print()
 
     if(len(category['beg']) > 0):
-        print('Tags you have very little experience and need to foucs:')
+        print('Tags you have very little experience and need to focus:')
         print(pd.DataFrame(category['beg']))
         print()
 
@@ -219,23 +220,31 @@ def showStats(userId):
         print()
 
 # Driver Code
+
+file = open("userHandle.txt", "r")
+userHandle = file.read()
+file.close()
+
 userChoice = -1
-userHandle = ''
-while(userHandle == ''):
+while(userHandle == '' or (getUserInfo(userHandle) == False)):
     userHandle = input('Enter your codeforces user handle: ')
-    if(getUserInfo(userHandle) == False):
-        userHandle = ''
+
+file = open("test.txt", "w")
+file.write(userHandle)
+file.close()
+    
+checkUserActivity(userHandle)
 
 n = 8
 inp = [str(i) for i in range(1, n+1)]
 while(userChoice != n):
     print()
-    print('1. User Profile')
-    print('2. Show Solved Problems')
+    print('1. User profile')
+    print('2. Show solved Problems')
     print('3. Show unolved Problems')  
     print('4. Load an unsolved Problems')
     print('5. Load a new Problem')
-    print('6. Show My Stats')
+    print('6. Show my stats')
     print('7. Change User Handle')
     print('8. Exit')
 
@@ -288,9 +297,11 @@ while(userChoice != n):
 
     elif(userChoice == 7):
         userHandle = ''
-        while(userHandle == ''):
+        while(userHandle == '' or (getUserInfo(userHandle) == False)):
             userHandle = input('Enter your codeforces user handle: ')
-            if(getUserInfo(userHandle) == False):
-                userHandle = ''
+        
+        file = open("userHandle.txt", "w")
+        file.write(userHandle)
+        file.close()
 
     print()

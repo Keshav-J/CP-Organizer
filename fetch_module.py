@@ -1,4 +1,5 @@
 import requests
+import time
 
 def getUserInfo(userId):
     url = 'https://codeforces.com/api/user.info'
@@ -20,6 +21,8 @@ def getUserInfo(userId):
 
 def displayUserInfo(userId):
     user = getUserInfo(userId)
+
+    if(user == False): return
 
     print()
     if('firstName' in user.keys() and 'lastName' in user.keys()):
@@ -57,9 +60,9 @@ def getUserProblems(userId):
     response = requests.get(url, params)
     data = response.json()
 
-    if(data['status'] != 'OK'):
-        print('User handle not found!')
-        return
+    #if(data['status'] != 'OK'):
+    #    print('User handle not found!')
+    #    return
     
     submissions = data['result']
 
@@ -107,9 +110,9 @@ def getUserProblemsDetailed(userId):
     response = requests.get(url, params)
     data = response.json()
 
-    if(data['status'] != 'OK'):
-        print('User handle not found!')
-        return
+    #if(data['status'] != 'OK'):
+    #    print('User handle not found!')
+    #    return
     
     submissions = data['result']
 
@@ -149,6 +152,54 @@ def getUserProblemsDetailed(userId):
         'tags'    : tags
     }
 
+def checkUserActivity(userId):
+    url = 'https://codeforces.com/api/user.status'
+
+    params = {
+        'handle' : userId,
+        'count'  : 1,
+        'gym'    : False
+    }
+
+    response = requests.get(url, params)
+    data = response.json()
+    
+    last_submission = data['result'][0]
+    last_time = last_submission['author']['startTimeSeconds']
+    cur_time = int(round(time.time()))
+    one_day = 60 * 60 * 24
+
+    print('Hey ', userId, '!', sep='')
+
+    if((cur_time - last_time) / one_day >= 2):
+        print("It's been", (cur_time - last_time)//one_day, "days since you've attempted a problem.")
+        print("Why don't you try one?")
+        return
+
+    url = 'https://codeforces.com/api/user.rating'
+
+    params = {
+        'handle' : userId
+    }
+
+    response = requests.get(url, params)
+    data = response.json()
+
+    ratings = data['result'][-5:]
+
+    gross_rating = ratings[-1]['newRating'] - ratings[0]['oldRating']
+
+    if(gross_rating > 50):
+        print('Your rating over the past 5 contests have increased by', gross_rating)
+        print('Keep the good work going!')
+        return
+
+    if(gross_rating >= 0):
+        gorss_rating = '+' + str(gross_rating)
+    
+    print('Your cummulative rating change over the past 5 contests is', gross_rating)
+    print("Why don't you solve some more problems?")
+        
 def printUserProblemsStat(problems):
     print()
     print('Attempted:', len(problems['solved'])+len(problems['unsolved']))
